@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
   <meta charset="UTF-8">
   <title>Flappy Quầy Tuyển Sinh</title>
@@ -17,21 +16,15 @@
       font-family: 'Oswald', sans-serif;
       overflow: hidden;
     }
-
     canvas {
       display: block;
       margin: 0 auto;
-
-      /* Giữ đúng tỉ lệ gốc */
       width: 100%;
       height: auto;
       max-height: 100%;
-
-      /* Ngăn méo hình */
       aspect-ratio: 9 / 16;
       object-fit: contain;
     }
-
     #scoreDisplay {
       position: absolute;
       top: 60px;
@@ -44,7 +37,6 @@
       pointer-events: none;
       user-select: none;
     }
-
     #overlay {
       position: absolute;
       top: 0;
@@ -62,120 +54,47 @@
       z-index: 5;
       backdrop-filter: blur(4px);
     }
-
-    #overlay img {
-      width: 120px;
-      height: auto;
-      margin-bottom: 20px;
-    }
-
+    #overlay img { width: 120px; margin-bottom: 20px; }
     #overlay input {
-      width: 80px;
-      text-align: center;
-      margin-top: 12px;
-      padding: 4px;
-      border: 1px solid #999;
-      border-radius: 6px;
-      font-size: 14px;
+      width: 80px; text-align: center; margin-top: 12px; padding: 4px;
+      border: 1px solid #999; border-radius: 6px; font-size: 14px;
     }
-
     #startBtn {
-      margin-top: 20px;
-      padding: 12px 30px;
-      font-size: 14px;
-      font-family: 'Oswald', sans-serif;
-      border: 2px solid #000;
-      border-radius: 8px;
-      background: #ff4081;
-      color: #fff;
-      cursor: pointer;
-      text-shadow: 1px 1px #000;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      margin-top: 20px; padding: 12px 30px; font-size: 14px;
+      font-family: 'Oswald', sans-serif; border: 2px solid #000; border-radius: 8px;
+      background: #ff4081; color: #fff; cursor: pointer;
+      text-shadow: 1px 1px #000; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
       transition: 0.2s;
     }
-
-    #startBtn:hover {
-      background: #f50057;
-      transform: scale(1.05);
-    }
-
+    #startBtn:hover { background: #f50057; transform: scale(1.05); }
     #popup {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #fff;
-      color: #000;
-      padding: 24px 36px;
-      border-radius: 14px;
-      font-size: 18px;
-      text-align: center;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
-      display: none;
-      z-index: 10;
-      animation: pop 0.4s ease;
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #fff; color: #000; padding: 24px 36px; border-radius: 14px;
+      font-size: 18px; text-align: center; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+      display: none; z-index: 10; animation: pop 0.4s ease;
     }
-
     #popup button {
-      margin: 10px;
-      padding: 8px 20px;
-      font-family: 'Oswald', sans-serif;
-      border: none;
-      border-radius: 8px;
-      background: #ff5722;
-      color: #fff;
-      cursor: pointer;
-      font-size: 14px;
-      transition: 0.2s;
+      margin: 10px; padding: 8px 20px; font-family: 'Oswald', sans-serif;
+      border: none; border-radius: 8px; background: #ff5722; color: #fff;
+      cursor: pointer; font-size: 14px; transition: 0.2s;
     }
-
-    #popup button:hover {
-      transform: scale(1.05);
-    }
-
+    #popup button:hover { transform: scale(1.05); }
     @keyframes pop {
-      from {
-        transform: translate(-50%, -50%) scale(0.6);
-        opacity: 0;
-      }
-
-      to {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 1;
-      }
+      from { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+      to   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
     }
-
-    /* Nút Jump cho mobile */
     #jumpBtn {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      padding: 20px 30px;
-      border-radius: 50%;
-      border: none;
-      background: #ff9800;
-      color: #fff;
-      font-size: 20px;
-      font-weight: bold;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      cursor: pointer;
-      display: none;
-      z-index: 6;
+      position: fixed; bottom: 30px; right: 30px; padding: 20px 30px;
+      border-radius: 50%; border: none; background: #ff9800; color: #fff;
+      font-size: 20px; font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); cursor: pointer; display: none; z-index: 6;
     }
-
-    @media (max-width: 768px) {
-      #jumpBtn {
-        display: block;
-      }
-    }
+    @media (max-width: 768px) { #jumpBtn { display: block; } }
   </style>
 </head>
-
 <body>
   <canvas id="game" width="400" height="600"></canvas>
-
   <div id="scoreDisplay">0</div>
-
   <div id="overlay">
     <img src="assets/logo.png" alt="Logo Game">
     <div style="font-size:22px;margin-bottom:10px;">🎮 FLAPPY QUẦY TUYỂN SINH 🎮</div>
@@ -185,88 +104,89 @@
     </div>
     <button id="startBtn">BẮT ĐẦU</button>
   </div>
-
   <div id="popup"></div>
-
-  <!-- Nút Jump cho mobile -->
   <button id="jumpBtn">⬆</button>
 
-  <script>
-    // Âm thanh
-    const jumpSound = new Audio("assets/jump.mp3");
-    const pointSound = new Audio("assets/point.mp3");
-    const gameOverSound = new Audio("assets/gameover.mp3");
-    jumpSound.volume = 0.6;
-    pointSound.volume = 0.6;
-    gameOverSound.volume = 0.7;
+<script>
+  // Âm thanh
+  const jumpSound = new Audio("assets/jump.mp3");
+  const pointSound = new Audio("assets/point.mp3");
+  const gameOverSound = new Audio("assets/gameover.mp3");
+  jumpSound.volume = 0.6; pointSound.volume = 0.6; gameOverSound.volume = 0.7;
 
-    const cvs = document.getElementById("game"), ctx = cvs.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    let frames = 0, running = false, score = 0, best = 0, rewardTarget = 10;
+  const cvs = document.getElementById("game"), ctx = cvs.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  let frames = 0, running = false, score = 0, best = 0, rewardTarget = 10;
 
-    // load images
-    const birdImg = new Image(); birdImg.src = "assets/bird.png";
-    const pipeImg = new Image(); pipeImg.src = "assets/pipe.png";
-    const bgImg = new Image(); bgImg.src = "assets/bg.png";
+  // load images (PNG)
+  const birdImg = new Image(); birdImg.src = "assets/bird.png";
+  const pipeImg = new Image(); pipeImg.src = "assets/pipe.png";
+  const bgImg = new Image(); bgImg.src = "assets/bg.png";
 
-    const bird = {
-      x: 50, y: 150, w: 32, h: 32, gravity: 0.25, velocity: 0, jump: 4,
-      draw() { ctx.drawImage(birdImg, this.x, this.y, this.w, this.h); },
-      update() {
-        this.velocity += this.gravity;
-        this.y += this.velocity;
-        if (this.y + this.h > cvs.height || this.y < 0) endGame();
-      }
-    };
-
-    const pipes = [];
-    const PIPE_WIDTH = 25;
-    function addPipe() {
-      let gap = 130;
-      let topHeight = Math.random() * (cvs.height - gap - 120) + 40;
-      pipes.push({ x: cvs.width, y: 0, w: PIPE_WIDTH, h: topHeight, passed: false, isTop: true });
-      pipes.push({ x: cvs.width, y: topHeight + gap, w: PIPE_WIDTH, h: cvs.height - topHeight - gap, passed: false, isTop: false });
+  const bird = {
+    x: 50, y: 150, w: 32, h: 32,
+    gravity: 9.8, velocity: 0, jump: 250,
+    draw() { ctx.drawImage(birdImg, this.x, this.y, this.w, this.h); },
+    update(dt) {
+      this.velocity += this.gravity * dt;
+      this.y += this.velocity * dt;
+      if (this.y + this.h > cvs.height || this.y < 0) endGame();
     }
-    function drawPipes() { pipes.forEach(p => ctx.drawImage(pipeImg, p.x, p.y, p.w, p.h)); }
-    function updatePipes() {
-      pipes.forEach(p => p.x -= 2);
-      if (pipes.length && pipes[0].x + pipes[0].w < 0) pipes.splice(0, 2);
-      if (frames % 100 === 0) addPipe();
+  };
 
-      for (let i = 0; i < pipes.length; i += 2) {
-        let topPipe = pipes[i];
-        if (!topPipe.passed && topPipe.x + topPipe.w < bird.x) {
-          topPipe.passed = true;
-          score++;
-          if (score > best) best = score;
-          document.getElementById("scoreDisplay").textContent = score;
-          pointSound.currentTime = 0; pointSound.play();
-          if (score === rewardTarget) {
-            running = false;
-            showPopup("🎉 Chúc mừng!<br>Bạn đã đạt mốc quà 🎁<br>Điểm: " + score);
-          }
+  const pipes = [];
+  const PIPE_WIDTH = 50;
+  function addPipe() {
+    let gap = 140;
+    let topHeight = Math.random() * (cvs.height - gap - 120) + 40;
+    pipes.push({ x: cvs.width, y: 0, w: PIPE_WIDTH, h: topHeight, passed: false });
+    pipes.push({ x: cvs.width, y: topHeight + gap, w: PIPE_WIDTH, h: cvs.height - topHeight - gap, passed: false });
+  }
+  function drawPipes() { pipes.forEach(p => ctx.drawImage(pipeImg, p.x, p.y, p.w, p.h)); }
+  function updatePipes(dt) {
+    pipes.forEach(p => p.x -= 200 * dt);
+    if (pipes.length && pipes[0].x + pipes[0].w < 0) pipes.splice(0, 2);
+    if (frames % 100 === 0) addPipe();
+
+    for (let i = 0; i < pipes.length; i += 2) {
+      let topPipe = pipes[i];
+      if (!topPipe.passed && topPipe.x + topPipe.w < bird.x) {
+        topPipe.passed = true;
+        score++;
+        if (score > best) best = score;
+        document.getElementById("scoreDisplay").textContent = score;
+        pointSound.currentTime = 0; pointSound.play();
+        if (score === rewardTarget) {
+          running = false;
+          showPopup("🎉 Chúc mừng!<br>Bạn đã đạt mốc quà 🎁<br>Điểm: " + score);
         }
       }
     }
+  }
 
-    function loop() {
-      if (!running) return;
-      frames++;
-      ctx.clearRect(0, 0, cvs.width, cvs.height);
-      ctx.drawImage(bgImg, 0, 0, cvs.width, cvs.height);
+  let lastTime = 0;
+  function loop(timestamp) {
+    if (!running) return;
+    if (!lastTime) lastTime = timestamp;
+    let dt = (timestamp - lastTime) / 1000; // giây
+    lastTime = timestamp;
 
-      bird.update(); bird.draw();
-      updatePipes(); drawPipes();
+    frames++;
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+    ctx.drawImage(bgImg, 0, 0, cvs.width, cvs.height);
 
-      for (let p of pipes) {
-        if (bird.x + bird.w > p.x && bird.x < p.x + p.w && bird.y + bird.h > p.y && bird.y < p.y + p.h) {
-          endGame();
-        }
+    bird.update(dt); bird.draw();
+    updatePipes(dt); drawPipes();
+
+    for (let p of pipes) {
+      if (bird.x + bird.w > p.x && bird.x < p.x + p.w && bird.y + bird.h > p.y && bird.y < p.y + p.h) {
+        endGame();
       }
-      requestAnimationFrame(loop);
     }
+    requestAnimationFrame(loop);
+  }
 
-    function endGame() {
+  function endGame() {
     if (!running) return;
     running = false;
     gameOverSound.currentTime = 0; gameOverSound.play();
@@ -285,20 +205,23 @@
   }
 
   function restartGame() {
-    score = 0; frames = 0; pipes.length = 0; bird.y = 150; bird.velocity = 0;
+    score = 0; frames = 0; pipes.length = 0;
+    bird.y = 150; bird.velocity = 0;
     running = true;
     document.getElementById("popup").style.display = "none";
     document.getElementById("overlay").style.display = "none";
     document.getElementById("scoreDisplay").textContent = "0";
     rewardTarget = parseInt(document.getElementById("rewardInput").value) || 10;
-    loop();
+    lastTime = 0;
+    requestAnimationFrame(loop);
   }
 
   function goHome() {
-    score = 0; frames = 0; pipes.length = 0; bird.y = 150; bird.velocity = 0;
+    score = 0; frames = 0; pipes.length = 0;
+    bird.y = 150; bird.velocity = 0;
     running = false;
     document.getElementById("popup").style.display = "none";
-    document.getElementById("overlay").style.display = "flex"; // hiện lại màn hình chính
+    document.getElementById("overlay").style.display = "flex";
     document.getElementById("scoreDisplay").textContent = "0";
   }
 
@@ -317,5 +240,4 @@
   document.getElementById("jumpBtn").onclick = jump;
 </script>
 </body>
-
 </html>
