@@ -1,284 +1,406 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Flappy Quầy Tuyển Sinh</title>
-  <!-- Font Oswald -->
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
+    :root{
+      --canvas-w:400;
+      --canvas-h:600;
+    }
+    html,body{height:100%;margin:0;padding:0;}
     body {
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background: linear-gradient(135deg, #1e1e1e, #2c2c2c);
-    font-family: 'Oswald', sans-serif;
-    overflow: hidden;
-  }
-  canvas {
-    display: block;
-    margin: 0 auto;
-    width: 100%;
-    height: auto;
-    max-height: 100%;
-    aspect-ratio: 9 / 16;
-    object-fit: contain;
-    image-rendering: pixelated;  
-  }
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #1e1e1e, #2c2c2c);
+      font-family: 'Oswald', sans-serif;
+      overflow: hidden;
+    }
+    /* canvas scale giữ tỉ lệ, internal resolution = width/height attributes */
+    canvas {
+      display: block;
+      border-radius: 12px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.6);
+      image-rendering: pixelated; /* giúp nét khi scale (pixel-art). Nếu ảnh vector, đổi thành auto */
+      touch-action: manipulation;
+      width: 100%;
+      height: auto;
+      max-height: 100%;
+      aspect-ratio: 9 / 16;
+      object-fit: contain;
+    }
+
     #scoreDisplay {
       position: absolute;
-      top: 60px;
+      top: 40px;
       left: 50%;
       transform: translateX(-50%);
       color: #fff;
-      font-size: 6vw;
+      font-size: clamp(28px,6vw,56px);
       font-weight: 700;
       text-shadow: 3px 3px #000;
       pointer-events: none;
       user-select: none;
+      z-index: 6;
     }
+
     #overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.75);
+      position: absolute; inset:0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,0.6);
       color: #ffeb3b;
-      font-size: 20px;
-      text-align: center;
-      z-index: 5;
+      text-align:center;
+      z-index: 8;
+      gap:8px;
+      padding:18px;
       backdrop-filter: blur(4px);
     }
-    #overlay img { width: 120px; margin-bottom: 20px; }
-    #overlay input {
-      width: 80px; text-align: center; margin-top: 12px; padding: 4px;
-      border: 1px solid #999; border-radius: 6px; font-size: 14px;
+    #overlay img{ width:100px; height:auto; border-radius:8px; box-shadow:0 8px 20px rgba(0,0,0,0.3); }
+    #overlay input{ width:84px; text-align:center; padding:6px; border-radius:8px; border:1px solid #ccc; }
+
+    #startBtn{
+      padding:10px 24px; border-radius:10px; border:none;
+      background: linear-gradient(135deg,#ff4081,#f50057);
+      color:#fff; font-weight:700; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,0.3);
     }
-    #startBtn {
-      margin-top: 20px; padding: 12px 30px; font-size: 14px;
-      font-family: 'Oswald', sans-serif; border: 2px solid #000; border-radius: 8px;
-      background: #ff4081; color: #fff; cursor: pointer;
-      text-shadow: 1px 1px #000; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      transition: 0.2s;
+
+    #popup{
+      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:min(92%,360px);
+      background:#fff; color:#222; padding:16px; border-radius:12px;
+      box-shadow:0 12px 36px rgba(0,0,0,0.45); z-index:10; display:none; text-align:center;
     }
-    #startBtn:hover { background: #f50057; transform: scale(1.05); }
-    #popup {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: #fff; color: #000; padding: 24px 36px; border-radius: 14px;
-      font-size: 18px; text-align: center; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
-      display: none; z-index: 10; animation: pop 0.4s ease;
+    #popup .msg{ font-weight:700; margin-bottom:10px; }
+    #popup .btns{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+    #popup button{ padding:8px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
+    #popup button.ok{ background:#ff5722; color:#fff; }
+    #popup button.secondary{ background:#777; color:#fff; }
+
+    #jumpBtn{
+      position:fixed; right:18px; bottom:18px; z-index:7;
+      background:#ff9800; color:#fff; border:none; padding:14px 18px; border-radius:999px;
+      font-size:20px; display:none; box-shadow:0 8px 20px rgba(0,0,0,0.25);
     }
-    #popup button {
-      margin: 10px; padding: 8px 20px; font-family: 'Oswald', sans-serif;
-      border: none; border-radius: 8px; background: #ff5722; color: #fff;
-      cursor: pointer; font-size: 14px; transition: 0.2s;
-    }
-    #popup button:hover { transform: scale(1.05); }
-    @keyframes pop {
-      from { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
-      to   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    }
-    #jumpBtn {
-      position: fixed; bottom: 30px; right: 30px; padding: 20px 30px;
-      border-radius: 50%; border: none; background: #ff9800; color: #fff;
-      font-size: 20px; font-weight: bold;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); cursor: pointer; display: none; z-index: 6;
-    }
-    @media (max-width: 768px) { #jumpBtn { display: block; } }
+    @media (max-width:768px){ #jumpBtn{ display:block; } }
   </style>
 </head>
 <body>
-  <canvas id="game" width="400" height="600"></canvas>
+  <canvas id="game" width="400" height="600" aria-label="Flappy Quầy Tuyển Sinh"></canvas>
   <div id="scoreDisplay">0</div>
+
   <div id="overlay">
-    <img src="assets/logo.png" alt="Logo Game">
-    <div style="font-size:22px;margin-bottom:10px;">🎮 FLAPPY QUẦY TUYỂN SINH 🎮</div>
-    <div>
-      <label style="color:#fff;">Mốc nhận quà: </label>
-      <input type="number" id="rewardInput" value="10">
+    <img src="assets/logo.png" alt="Logo">
+    <div style="font-size:20px">🎮 FLAPPY QUẦY TUYỂN SINH 🎮</div>
+    <div style="color:#fff">
+      <label>Mốc nhận quà:</label>
+      <input id="rewardInput" type="number" value="10" min="1">
     </div>
     <button id="startBtn">BẮT ĐẦU</button>
+    <div style="font-size:13px;color:#ddd">Nhấn Space / Chạm màn hình để nhảy</div>
   </div>
-  <div id="popup"></div>
-  <button id="jumpBtn">⬆</button>
+
+  <div id="popup" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="msg">💀 Game Over 💀<br>Bạn đi qua được <span id="finalScore">0</span> cột!</div>
+    <div class="btns">
+      <button class="ok" id="retryBtn">🔄 Chơi lại</button>
+      <button class="secondary" id="homeBtn">🏠 Về màn hình chính</button>
+    </div>
+  </div>
+
+  <button id="jumpBtn" aria-label="Jump">⬆</button>
 
 <script>
-  // Âm thanh
-  const jumpSound = new Audio("assets/jump.mp3");
-  const pointSound = new Audio("assets/point.mp3");
-  const gameOverSound = new Audio("assets/gameover.mp3");
-  jumpSound.volume = 0.6; pointSound.volume = 0.6; gameOverSound.volume = 0.7;
+/* ===== CONFIG ===== */
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
 
-  const cvs = document.getElementById("game"), ctx = cvs.getContext("2d");
-  ctx.imageSmoothingEnabled = false;
-  let frames = 0, running = false, score = 0, best = 0, rewardTarget = 10;
+const BASE_W = canvas.width;   // 400
+const BASE_H = canvas.height;  // 600
 
-  // load images (PNG)
-  const birdImg = new Image(); birdImg.src = "assets/bird.png";
-  const pipeImg = new Image(); pipeImg.src = "assets/pipe.png";
-  const bgImg = new Image(); bgImg.src = "assets/bg.png";
+// physics (px / s)
+const GRAVITY = 1000;     // px/s^2
+const JUMP_V = -340;      // px/s (negative = upward)
+const PIPE_SPEED = 150;   // px/s
+const PIPE_GAP = 140;     // px
+const SPAWN_INTERVAL = 1.35; // seconds
 
-   const bird = {
-    x: 50, y: 150, w: 32, h: 32,
-    gravity: 9.8, velocity: 0, jump: 250,
-    radius: 16, // 👈 thêm bán kính cho hitbox
-    draw() { ctx.drawImage(birdImg, this.x, this.y, this.w, this.h); },
-    update(dt) {
-      this.velocity += this.gravity * dt;
-      this.y += this.velocity * dt;
-      if (this.y + this.h > cvs.height || this.y < 0) endGame();
-    }
-  };
+/* ===== Assets (PNG kept as you requested) ===== */
+const birdImg = new Image(); birdImg.src = "assets/bird.png";
+const pipeImg = new Image(); pipeImg.src = "assets/pipe.png";
+const bgImg   = new Image(); bgImg.src = "assets/bg.png";
 
-  // --- Hàm check va chạm chính xác hơn ---
-  function checkCollision(ball, pipes) {
-    for (let p of pipes) {
-      // tìm điểm gần nhất trên pipe so với tâm bóng
-      let closestX = Math.max(p.x, Math.min(ball.x + ball.w / 2, p.x + p.w));
-      let closestY = Math.max(p.y, Math.min(ball.y + ball.h / 2, p.y + p.h));
+const jumpSound = new Audio("assets/jump.mp3");
+const pointSound = new Audio("assets/point.mp3");
+const gameOverSound = new Audio("assets/gameover.mp3");
+jumpSound.volume = 0.6; pointSound.volume = 0.6; gameOverSound.volume = 0.7;
 
-      let dx = (ball.x + ball.w / 2) - closestX;
-      let dy = (ball.y + ball.h / 2) - closestY;
+/* ===== State ===== */
+let lastTime = 0;
+let spawnTimer = 0;
+let running = false;
+let score = 0;
+let best = 0;
+let rewardTarget = parseInt(document.getElementById('rewardInput').value) || 10;
 
-      if ((dx * dx + dy * dy) < (ball.radius * ball.radius)) {
-        return true;
+const bird = {
+  x: 50,
+  y: BASE_H * 0.25,
+  w: 36,
+  h: 36,
+  vy: 0,
+  radius: 16 // used for circle hitbox
+};
+
+let pipes = []; // list of pipe objects {x,y,w,h,passed}
+
+/* ===== Utils ===== */
+function resetState(){
+  lastTime = 0;
+  spawnTimer = 0;
+  score = 0;
+  pipes.length = 0;
+  bird.y = BASE_H * 0.25;
+  bird.vy = 0;
+  document.getElementById('scoreDisplay').textContent = '0';
+  rewardTarget = parseInt(document.getElementById('rewardInput').value) || 10;
+}
+
+/* ===== Pipes ===== */
+function addPipe(){
+  const gap = PIPE_GAP;
+  const topH = Math.floor(Math.random() * (BASE_H - gap - 160)) + 40;
+  pipes.push({ x: BASE_W, y: 0, w: 46, h: topH, passed:false });
+  pipes.push({ x: BASE_W, y: topH + gap, w: 46, h: BASE_H - (topH + gap), passed:false });
+}
+
+/* ===== Collision: circle vs rect ===== */
+function circleRectCollision(cx, cy, r, rect){
+  // find closest point in rect to circle center
+  const closestX = Math.max(rect.x, Math.min(cx, rect.x + rect.w));
+  const closestY = Math.max(rect.y, Math.min(cy, rect.y + rect.h));
+  const dx = cx - closestX;
+  const dy = cy - closestY;
+  return (dx*dx + dy*dy) <= (r*r);
+}
+
+function checkCollision(){
+  const cx = bird.x + bird.w / 2;
+  const cy = bird.y + bird.h / 2;
+  const r = bird.radius * 0.9; // reduce slightly for forgiving feel
+  for (let p of pipes){
+    if (circleRectCollision(cx, cy, r, p)) return true;
+  }
+  return false;
+}
+
+/* ===== Update & Draw ===== */
+function update(dt){
+  // bird physics
+  bird.vy += GRAVITY * dt;
+  bird.y += bird.vy * dt;
+
+  // floor/ceiling
+  if (bird.y + bird.h > BASE_H) {
+    bird.y = BASE_H - bird.h;
+    endGame();
+    return;
+  }
+  if (bird.y < 0) {
+    bird.y = 0;
+    endGame();
+    return;
+  }
+
+  // pipes move
+  for (let p of pipes) p.x -= PIPE_SPEED * dt;
+
+  // remove offscreen pair
+  if (pipes.length >= 2 && pipes[0].x + pipes[0].w < -50) {
+    pipes.splice(0,2);
+  }
+
+  // spawn
+  spawnTimer += dt;
+  if (spawnTimer >= SPAWN_INTERVAL){
+    addPipe();
+    spawnTimer = 0;
+  }
+
+  // scoring
+  for (let i = 0; i < pipes.length; i += 2){
+    const top = pipes[i];
+    if (!top.passed && (top.x + top.w) < bird.x){
+      top.passed = true;
+      score++;
+      if (score > best) best = score;
+      document.getElementById('scoreDisplay').textContent = score;
+      try { pointSound.currentTime = 0; pointSound.play(); } catch(e){}
+      if (score === rewardTarget){
+        // reached reward target
+        running = false;
+        showPopup(`🎉 Chúc mừng!<br>Bạn đã đạt mốc quà 🎁<br>Điểm: ${score}`);
+        return;
       }
     }
-    return false;
   }
 
-  function loop(timestamp) {
-    if (!running) return;
-    if (!lastTime) lastTime = timestamp;
-    let dt = (timestamp - lastTime) / 1000; 
-    lastTime = timestamp;
-
-    frames++;
-    ctx.clearRect(0, 0, cvs.width, cvs.height);
-    ctx.drawImage(bgImg, 0, 0, cvs.width, cvs.height);
-
-    bird.update(dt); bird.draw();
-    updatePipes(dt); drawPipes();
-
-    // kiểm tra va chạm bằng hitbox mới
-    if (checkCollision(bird, pipes)) {
-      endGame();
-    }
-
-    requestAnimationFrame(loop);
+  // collision
+  if (checkCollision()){
+    endGame();
+    return;
   }
+}
 
-  const pipes = [];
-  const PIPE_WIDTH = 50;
-  function addPipe() {
-    let gap = 140;
-    let topHeight = Math.random() * (cvs.height - gap - 120) + 40;
-    pipes.push({ x: cvs.width, y: 0, w: PIPE_WIDTH, h: topHeight, passed: false });
-    pipes.push({ x: cvs.width, y: topHeight + gap, w: PIPE_WIDTH, h: cvs.height - topHeight - gap, passed: false });
-  }
-  function drawPipes() { pipes.forEach(p => ctx.drawImage(pipeImg, p.x, p.y, p.w, p.h)); }
-  function updatePipes(dt) {
-    pipes.forEach(p => p.x -= 200 * dt);
-    if (pipes.length && pipes[0].x + pipes[0].w < 0) pipes.splice(0, 2);
-    if (frames % 100 === 0) addPipe();
+function draw(){
+  // background
+  if (bgImg.complete) ctx.drawImage(bgImg, 0, 0, BASE_W, BASE_H);
+  else { ctx.fillStyle = '#cfeefc'; ctx.fillRect(0,0,BASE_W,BASE_H); }
 
-    for (let i = 0; i < pipes.length; i += 2) {
-      let topPipe = pipes[i];
-      if (!topPipe.passed && topPipe.x + topPipe.w < bird.x) {
-        topPipe.passed = true;
-        score++;
-        if (score > best) best = score;
-        document.getElementById("scoreDisplay").textContent = score;
-        pointSound.currentTime = 0; pointSound.play();
-        if (score === rewardTarget) {
-          running = false;
-          showPopup("🎉 Chúc mừng!<br>Bạn đã đạt mốc quà 🎁<br>Điểm: " + score);
-        }
-      }
+  // pipes
+  for (let p of pipes){
+    if (pipeImg.complete){
+      ctx.drawImage(pipeImg, p.x, p.y, p.w, p.h);
+    } else {
+      ctx.fillStyle = '#d35400';
+      ctx.fillRect(p.x,p.y,p.w,p.h);
     }
   }
 
-  let lastTime = 0;
-  function loop(timestamp) {
-    if (!running) return;
-    if (!lastTime) lastTime = timestamp;
-    let dt = (timestamp - lastTime) / 1000; // giây
-    lastTime = timestamp;
+  // bird
+  if (birdImg.complete) ctx.drawImage(birdImg, bird.x, bird.y, bird.w, bird.h);
+  else { ctx.fillStyle='#1e88e5'; ctx.fillRect(bird.x,bird.y,bird.w,bird.h); }
 
-    frames++;
-    ctx.clearRect(0, 0, cvs.width, cvs.height);
-    ctx.drawImage(bgImg, 0, 0, cvs.width, cvs.height);
+  // (optional) debug: draw circle hitbox
+  // ctx.beginPath(); ctx.strokeStyle='rgba(255,0,0,0.6)'; ctx.arc(bird.x+bird.w/2,bird.y+bird.h/2,bird.radius*0.9,0,Math.PI*2); ctx.stroke();
+}
 
-    bird.update(dt); bird.draw();
-    updatePipes(dt); drawPipes();
+/* ===== Game loop (time-based) ===== */
+let rafId = null;
+function loop(timestamp){
+  if (!running) return;
+  if (!lastTime) lastTime = timestamp;
+  let dt = (timestamp - lastTime) / 1000;
+  // clamp dt to avoid huge jumps when tab inactive
+  if (dt > 0.05) dt = 0.05;
+  lastTime = timestamp;
 
-    for (let p of pipes) {
-      if (bird.x + bird.w > p.x && bird.x < p.x + p.w && bird.y + bird.h > p.y && bird.y < p.y + p.h) {
-        endGame();
-      }
+  update(dt);
+  // clear & draw: canvas fixed internal resolution (BASE_W x BASE_H)
+  ctx.clearRect(0,0,BASE_W,BASE_H);
+  draw();
+
+  rafId = requestAnimationFrame(loop);
+}
+
+/* ===== Control functions ===== */
+function startGame(){
+  resetState();
+  running = true;
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('popup').style.display = 'none';
+  lastTime = 0;
+  // ensure score display reset
+  document.getElementById('scoreDisplay').textContent = '0';
+  rafId = requestAnimationFrame(loop);
+}
+
+function restartGame(){
+  resetState();
+  running = true;
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('popup').style.display = 'none';
+  lastTime = 0;
+  rafId = requestAnimationFrame(loop);
+}
+
+function goHome(){
+  // stop game and show overlay
+  running = false;
+  if (rafId) cancelAnimationFrame(rafId);
+  document.getElementById('popup').style.display = 'none';
+  document.getElementById('overlay').style.display = 'flex';
+  resetState();
+}
+
+function showPopup(msg){
+  document.getElementById('finalScore').textContent = score;
+  const p = document.getElementById('popup');
+  p.querySelector('.msg').innerHTML = msg;
+  p.style.display = 'block';
+  p.setAttribute('aria-hidden','false');
+}
+
+function endGame(){
+  if (!running) return;
+  running = false;
+  try { gameOverSound.currentTime = 0; gameOverSound.play(); } catch(e){}
+  showPopup(`💀 Game Over 💀<br>Bạn đi qua được ${score} cột!`);
+}
+
+/* ===== Controls (jump & events) ===== */
+function jump(){
+  if (!running) return;
+  bird.vy = JUMP_V;
+  try { jumpSound.currentTime = 0; jumpSound.play(); } catch(e){}
+}
+
+/* Events */
+document.getElementById('startBtn').addEventListener('click', () => {
+  rewardTarget = parseInt(document.getElementById('rewardInput').value) || 10;
+  startGame();
+});
+document.getElementById('retryBtn').addEventListener('click', restartGame);
+document.getElementById('homeBtn').addEventListener('click', goHome);
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    if (!running && document.getElementById('overlay').style.display !== 'none') {
+      startGame();
+    } else {
+      jump();
     }
-    requestAnimationFrame(loop);
+    e.preventDefault();
   }
+});
 
-  function endGame() {
-    if (!running) return;
-    running = false;
-    gameOverSound.currentTime = 0; gameOverSound.play();
-    showPopup("💀 Game Over 💀<br>Bạn đi qua được " + score + " cột!");
-  }
+// Pointer/touch on canvas: if overlay visible -> start; else jump
+canvas.addEventListener('pointerdown', (ev) => {
+  if (!running && document.getElementById('overlay').style.display !== 'none') startGame();
+  else jump();
+});
 
-  function showPopup(msg) {
-    const popup = document.getElementById("popup");
-    popup.innerHTML = `
-      ${msg}
-      <br>
-      <button onclick="restartGame()">🔄 Chơi lại</button>
-      <button onclick="goHome()">🏠 Về màn hình chính</button>
-    `;
-    popup.style.display = "block";
-  }
+canvas.addEventListener('touchstart', (ev) => {
+  if (!running && document.getElementById('overlay').style.display !== 'none') startGame();
+  else jump();
+}, {passive:false});
 
-  function restartGame() {
-    score = 0; frames = 0; pipes.length = 0;
-    bird.y = 150; bird.velocity = 0;
-    running = true;
-    document.getElementById("popup").style.display = "none";
-    document.getElementById("overlay").style.display = "none";
-    document.getElementById("scoreDisplay").textContent = "0";
-    rewardTarget = parseInt(document.getElementById("rewardInput").value) || 10;
-    lastTime = 0;
-    requestAnimationFrame(loop);
-  }
+document.getElementById('jumpBtn').addEventListener('click', () => {
+  if (!running && document.getElementById('overlay').style.display !== 'none') startGame();
+  else jump();
+});
 
-  function goHome() {
-    score = 0; frames = 0; pipes.length = 0;
-    bird.y = 150; bird.velocity = 0;
-    running = false;
-    document.getElementById("popup").style.display = "none";
-    document.getElementById("overlay").style.display = "flex";
-    document.getElementById("scoreDisplay").textContent = "0";
-  }
+/* ensure canvas display size fits viewport while keeping internal resolution */
+function resizeCanvasStyle(){
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const scale = Math.min(vw / BASE_W, vh / BASE_H);
+  canvas.style.width = Math.round(BASE_W * scale) + 'px';
+  canvas.style.height = Math.round(BASE_H * scale) + 'px';
+}
+window.addEventListener('resize', resizeCanvasStyle);
+resizeCanvasStyle();
 
-  // controls
-  function jump() {
-    if (running) {
-      bird.velocity = -bird.jump;
-      jumpSound.currentTime = 0; jumpSound.play();
-    }
-  }
-
-  document.getElementById("startBtn").onclick = restartGame;
-  document.addEventListener("keydown", e => { if (e.code === "Space") jump(); });
-  cvs.addEventListener("click", jump);
-  cvs.addEventListener("touchstart", jump);
-  document.getElementById("jumpBtn").onclick = jump;
+/* initial setup */
+resetState();
 </script>
 </body>
 </html>
-
