@@ -7,24 +7,25 @@
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body {
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: linear-gradient(135deg, #1e1e1e, #2c2c2c);
-      font-family: 'Oswald', sans-serif;
-      overflow: hidden;
-    }
-    canvas {
-      display: block;
-      margin: 0 auto;
-      width: 100%;
-      height: auto;
-      max-height: 100%;
-      aspect-ratio: 9 / 16;
-      object-fit: contain;
-    }
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #1e1e1e, #2c2c2c);
+    font-family: 'Oswald', sans-serif;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    margin: 0 auto;
+    width: 100%;
+    height: auto;
+    max-height: 100%;
+    aspect-ratio: 9 / 16;
+    object-fit: contain;
+    image-rendering: pixelated;  
+  }
     #scoreDisplay {
       position: absolute;
       top: 60px;
@@ -123,9 +124,10 @@
   const pipeImg = new Image(); pipeImg.src = "assets/pipe.png";
   const bgImg = new Image(); bgImg.src = "assets/bg.png";
 
-  const bird = {
+   const bird = {
     x: 50, y: 150, w: 32, h: 32,
     gravity: 9.8, velocity: 0, jump: 250,
+    radius: 16, // 👈 thêm bán kính cho hitbox
     draw() { ctx.drawImage(birdImg, this.x, this.y, this.w, this.h); },
     update(dt) {
       this.velocity += this.gravity * dt;
@@ -133,6 +135,44 @@
       if (this.y + this.h > cvs.height || this.y < 0) endGame();
     }
   };
+
+  // --- Hàm check va chạm chính xác hơn ---
+  function checkCollision(ball, pipes) {
+    for (let p of pipes) {
+      // tìm điểm gần nhất trên pipe so với tâm bóng
+      let closestX = Math.max(p.x, Math.min(ball.x + ball.w / 2, p.x + p.w));
+      let closestY = Math.max(p.y, Math.min(ball.y + ball.h / 2, p.y + p.h));
+
+      let dx = (ball.x + ball.w / 2) - closestX;
+      let dy = (ball.y + ball.h / 2) - closestY;
+
+      if ((dx * dx + dy * dy) < (ball.radius * ball.radius)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function loop(timestamp) {
+    if (!running) return;
+    if (!lastTime) lastTime = timestamp;
+    let dt = (timestamp - lastTime) / 1000; 
+    lastTime = timestamp;
+
+    frames++;
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+    ctx.drawImage(bgImg, 0, 0, cvs.width, cvs.height);
+
+    bird.update(dt); bird.draw();
+    updatePipes(dt); drawPipes();
+
+    // kiểm tra va chạm bằng hitbox mới
+    if (checkCollision(bird, pipes)) {
+      endGame();
+    }
+
+    requestAnimationFrame(loop);
+  }
 
   const pipes = [];
   const PIPE_WIDTH = 50;
@@ -241,3 +281,4 @@
 </script>
 </body>
 </html>
+
